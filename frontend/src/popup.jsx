@@ -15,14 +15,15 @@ function Popup() {
     const dispatch = useDispatch();
 
 
-    useEffect(() => {
-        let pubKey = localStorage.getItem('pubKey');
-        if (pubKey) {
-            dispatch(setIsAuth(true));
-        } else {
-            dispatch(setIsAuth(false));
-        }
-    }, [])
+    // useEffect(() => {
+    //     let pubKey = localStorage.getItem('pubKey');
+    //     if (pubKey) {
+    //         console.log('CCCCCCC');
+    //         dispatch(setIsAuth(true));
+    //     } else {
+    //         dispatch(setIsAuth(false));
+    //     }
+    // }, [])
 
     return (
         <div className={styles.container}>

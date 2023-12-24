@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../Styles.module.css';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setIsAuth } from '../redux/store.js';
+
+
 
 
 const MyForm = () => {
+    const dispatch = useDispatch();
 
     const isAuth = useSelector(state => state.app.is_auth);
 
@@ -13,21 +17,35 @@ const MyForm = () => {
 
 
     const handleLoginClick = () => {
+        console.log('BBBB');
         localStorage.setItem('pubKey', pubKey);
         localStorage.setItem('privKey', privKey);
+        dispatch(setIsAuth(true));
+        console.log("must be true = ", isAuth);
     }
     const handleLogoutClick = () => {
         console.log('AAAAA');
-        localStorage.remove('pubKey');
-        localStorage.remove('privKey');
+        localStorage.removeItem('pubKey');
+        localStorage.removeItem('privKey');
         setPubKey('');
         setPrivKey('');
+        console.log("paub key = ", pubKey);
+        dispatch(setIsAuth(false));
+        console.log("must be false = ", isAuth);
     }
     const handleGenerateNewClick = () => {
     }
 
     useEffect(() => {
-        if (isAuth) {
+        let pubKey = localStorage.getItem('pubKey');
+        if (pubKey) {
+            console.log('CCCCCCC');
+            dispatch(setIsAuth(true));
+        } else {
+            dispatch(setIsAuth(false));
+        }
+        console.log('DDDDDDD');
+        if (pubKey) {
             setPubKey(localStorage.getItem('pubKey'));
             setPrivKey(localStorage.getItem('privKey'));
         }
