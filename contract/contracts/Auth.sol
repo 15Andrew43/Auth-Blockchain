@@ -21,6 +21,19 @@ contract Auth {
     event changeLogin(string site, string oldLogin, string newLogin);
     event changePassword(string site, string login, bytes newPassword);
 
+    modifier isAuth(
+        bytes32 message,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) {
+        require(
+            msg.sender == verifySignature(message, v, r, s),
+            "you can not change someone else's state"
+        );
+        _;
+    }
+
     constructor() {
         owner = msg.sender;
     }
@@ -30,7 +43,7 @@ contract Auth {
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) public pure returns (address) {
+    ) internal pure returns (address) {
         bytes32 signature = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", message)
         );
@@ -45,12 +58,7 @@ contract Auth {
         bytes32 s,
         string memory oldSiteName,
         string memory newSiteName
-    ) external {
-        require(
-            msg.sender == verifySignature(message, v, r, s),
-            "you can not change someone else's state"
-        );
-
+    ) external isAuth(message, v, r, s) {
         for (uint i = 0; i < users[msg.sender][oldSiteName].length; i++) {
             User memory user = users[msg.sender][oldSiteName][i];
             users[msg.sender][newSiteName].push(user);
@@ -76,12 +84,7 @@ contract Auth {
         string memory site,
         string memory oldLogin,
         string memory newLogin
-    ) external {
-        require(
-            msg.sender == verifySignature(message, v, r, s),
-            "you can not change someone else's state"
-        );
-
+    ) external isAuth(message, v, r, s) {
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             if (
                 MyStringLibrary.isEqual(
@@ -105,12 +108,7 @@ contract Auth {
         string memory site,
         string memory login,
         bytes memory newPassword
-    ) external {
-        require(
-            msg.sender == verifySignature(message, v, r, s),
-            "you can not change someone else's state"
-        );
-
+    ) external isAuth(message, v, r, s) {
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             if (
                 MyStringLibrary.isEqual(users[msg.sender][site][i].login, login)
@@ -131,15 +129,29 @@ contract Auth {
         string memory site,
         string memory _login,
         bytes memory _password
-    ) external {
-        require(
-            msg.sender == verifySignature(message, v, r, s),
-            "you can not change someone else's state"
-        );
-
+    ) external isAuth(message, v, r, s) {
         sites[msg.sender].push(site);
         users[msg.sender][site].push(User(_login, _password));
 
         emit NewUser(site, _login, _password);
+    }
+
+    function getSites(
+        bytes32 message,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public view isAuth(message, v, r, s) returns (string[] memory) {
+        return sites[msg.sender];
+    }
+
+    function getLogins(
+        bytes32 message,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string memory site
+    ) public view isAuth(message, v, r, s) returns (User[] memory) {
+        return users[msg.sender][site];
     }
 }

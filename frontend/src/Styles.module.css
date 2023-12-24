@@ -7,3 +7,18 @@
     text-align: center;
     border: solid 1px;
 }
+
+.form {
+    border: solid 1px;
+}
+
+.form_input {
+    display: flex;
+    justify-content: space-between;
+    background-color: aqua;
+    margin-bottom: 5px;
+}
+
+.form_input input {
+    width: 70%;
+}
