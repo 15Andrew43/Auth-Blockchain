@@ -22,3 +22,8 @@
 .form_input input {
     width: 70%;
 }
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+}

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import ReactDOM from 'react-dom/client';
 import styles from './Styles.module.css';
 import MyForm from './components/MyForm.jsx';
-import { Provider } from "react-redux";
-import { store } from './redux/store.js';
+import { Provider, useDispatch } from "react-redux";
+import { store, setIsAuth } from './redux/store.js';
 
 import { BrowserRouter as Router } from 'react-router-dom';
 
@@ -12,20 +12,27 @@ const root = ReactDOM.createRoot(
 );
 
 function Popup() {
+    const dispatch = useDispatch();
 
-    const [isAuth, setIsAuth] = useState(false);
 
-    if (!isAuth) {
-        return (
-            <div className={styles.container}>
-                <h3 className={styles.header}>
-                    Tool for saving logins&passwords in blockchain
-                </h3>
-                <p>Enter your pub and private keys:</p>
-                <MyForm />
-            </div>
-        );
-    }
+    useEffect(() => {
+        let pubKey = localStorage.getItem('pubKey');
+        if (pubKey) {
+            dispatch(setIsAuth(true));
+        } else {
+            dispatch(setIsAuth(false));
+        }
+    }, [])
+
+    return (
+        <div className={styles.container}>
+            <h3 className={styles.header}>
+                Tool for saving logins&passwords in blockchain
+            </h3>
+            <p>Enter your pub and private keys:</p>
+            <MyForm />
+        </div>
+    );
 
 }
 
