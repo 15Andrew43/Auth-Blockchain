@@ -17,6 +17,9 @@ const CreateUser = () => {
         if (localStorage.getItem('pubKey')) {
             addUserToSite(localStorage.getItem('pubKey'), site, login, password);
         }
+        setSite('');
+        setLogin('');
+        setPassword('');
     }
 
 
