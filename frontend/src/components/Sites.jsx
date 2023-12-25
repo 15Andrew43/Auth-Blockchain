@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import styles from '../Styles.module.css';
 import { useSelector, useDispatch } from 'react-redux';
-import { setIsAuth } from '../redux/store.js';
-
-
-
+import { setSites } from '../redux/store.js';
 
 const Sites = () => {
     const dispatch = useDispatch();
-
-    const isAuth = useSelector(state => state.app.is_auth);
-
+    const sites = useSelector(state => state.app.sites);
 
     useEffect(() => {
-
-    }, [])
-
+        const fetchedSites = ['aaa', 'bbb', 'ccc'];
+        console.log('SITES = ', fetchedSites);
+        dispatch(setSites(fetchedSites));
+    }, [dispatch])
 
     return (
-        <div>
-
+        <div className={styles.sites}>
+            {sites.map((site, index) => (
+                <div key={index} className={styles.site}>
+                    {site}
+                </div>
+            ))}
         </div>
     );
 };

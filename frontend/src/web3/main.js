@@ -379,7 +379,7 @@ async function sighMessage(message) {
 
 
 
-async function changeSiteName(message, oldSiteName, newSiteName) {
+export async function changeSiteName(message, oldSiteName, newSiteName) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const currentNonce = await wallet.getTransactionCount();
@@ -400,7 +400,7 @@ async function changeSiteName(message, oldSiteName, newSiteName) {
     console.log('Transaction changeSiteName is sent. Transaction hash:', tx.hash);
 }
 
-async function changeSiteLogin(message, site, oldLogin, newLogin) {
+export async function changeSiteLogin(message, site, oldLogin, newLogin) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const currentNonce = await wallet.getTransactionCount();
@@ -421,7 +421,7 @@ async function changeSiteLogin(message, site, oldLogin, newLogin) {
     console.log('Transaction changeSiteLogin is sent. Transaction hash:', tx.hash);
 }
 
-async function changeSitePassword(message, site, login, newPassword) {
+export async function changeSitePassword(message, site, login, newPassword) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const currentNonce = await wallet.getTransactionCount();
@@ -442,7 +442,7 @@ async function changeSitePassword(message, site, login, newPassword) {
     console.log('Transaction changeSitePassword is sent. Transaction hash:', tx.hash);
 }
 
-async function addUserToSite(message, site, login, password) {
+export async function addUserToSite(message, site, login, password) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const textEncoder = new TextEncoder();
@@ -469,7 +469,7 @@ async function addUserToSite(message, site, login, password) {
 // addUserToSite(message, 'yandex.ru', 'kolya', 'nbnbnbnbnbnbn');
 
 
-async function getSites(message) {
+export async function getSites(message) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const result = await contract.getSites(messageHash, v, r, s);
@@ -482,7 +482,7 @@ async function getSites(message) {
 // getSites(message);
 
 
-async function getLogins(message, site) {
+export async function getLogins(message, site) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
     const result = await contract.getLogins(messageHash, v, r, s, site);

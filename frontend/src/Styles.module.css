@@ -1,6 +1,6 @@
 .container {
     width: 300px;
-    height: 300px;
+    height: 500px;
     border: solid 1px;
 }
 
@@ -27,4 +27,16 @@
 .buttons {
     display: flex;
     justify-content: space-between;
+}
+
+.sites {
+    /* height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px; */
+    border: solid 1px;
+}
+
+.site {
+    border: solid 1px;
 }
