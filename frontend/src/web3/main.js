@@ -365,46 +365,127 @@ const wallet = new ethers.Wallet(privateKey, provider);
 
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
-const message = 'Hello world';
+const message = publicKey;
 
 
+async function sighMessage(message) {
+    const messageBytes = ethers.utils.toUtf8Bytes(message);
+    const messageHash = ethers.utils.keccak256(messageBytes);
+    const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
+    const { v, r, s } = ethers.utils.splitSignature(signature);
 
-async function signAndSendTransaction(message, site, login, password) {
-    try {
-        // Sign the message
-        const messageBytes = ethers.utils.toUtf8Bytes(message);
-        const messageHash = ethers.utils.keccak256(messageBytes);
-        const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
-        const { v, r, s } = ethers.utils.splitSignature(signature);
-
-        // Encode parameters for the contract function
-        const textEncoder = new TextEncoder();
-        const bytesPassword = textEncoder.encode(password);
-
-        const currentNonce = await wallet.getTransactionCount();
-
-
-        // Prepare transaction object
-        const transaction = {
-            nonce: currentNonce,
-            to: contractAddress,
-            data: contract.interface.encodeFunctionData('addUserToSite', [messageHash, v, r, s, site, login, bytesPassword]),
-            gasLimit: 2000000, // Adjust the gas limit as needed
-            gasPrice: ethers.utils.parseUnits('30', 'gwei'), // Adjust the gas price as needed
-            chainId: chainId,
-        };
-
-        // Sign the transaction
-        const signedTransaction = await wallet.signTransaction(transaction);
-
-        // Send the transaction
-        const tx = await provider.sendTransaction(signedTransaction);
-
-        console.log('Transaction sent. Transaction hash:', tx.hash);
-    } catch (error) {
-        console.error('Error signing and sending transaction:', error);
-    }
+    return { messageHash, v, r, s }
 }
 
-// Call the function
-signAndSendTransaction(message, 'yandex.ru', 'qwerty', 'password');
+
+
+async function changeSiteName(message, oldSiteName, newSiteName) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const currentNonce = await wallet.getTransactionCount();
+
+    const transaction = {
+        nonce: currentNonce,
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData('changeSiteName', [messageHash, v, r, s, oldSiteName, newSiteName]),
+        gasLimit: 2000000,
+        gasPrice: ethers.utils.parseUnits('30', 'gwei'),
+        chainId: chainId,
+    };
+
+    const signedTransaction = await wallet.signTransaction(transaction);
+
+    const tx = await provider.sendTransaction(signedTransaction);
+
+    console.log('Transaction changeSiteName is sent. Transaction hash:', tx.hash);
+}
+
+async function changeSiteLogin(message, site, oldLogin, newLogin) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const currentNonce = await wallet.getTransactionCount();
+
+    const transaction = {
+        nonce: currentNonce,
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData('changeSiteLogin', [messageHash, v, r, s, site, oldLogin, newLogin]),
+        gasLimit: 2000000,
+        gasPrice: ethers.utils.parseUnits('30', 'gwei'),
+        chainId: chainId,
+    };
+
+    const signedTransaction = await wallet.signTransaction(transaction);
+
+    const tx = await provider.sendTransaction(signedTransaction);
+
+    console.log('Transaction changeSiteLogin is sent. Transaction hash:', tx.hash);
+}
+
+async function changeSitePassword(message, site, login, newPassword) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const currentNonce = await wallet.getTransactionCount();
+
+    const transaction = {
+        nonce: currentNonce,
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData('changeSitePassword', [messageHash, v, r, s, site, login, newPassword]),
+        gasLimit: 2000000,
+        gasPrice: ethers.utils.parseUnits('30', 'gwei'),
+        chainId: chainId,
+    };
+
+    const signedTransaction = await wallet.signTransaction(transaction);
+
+    const tx = await provider.sendTransaction(signedTransaction);
+
+    console.log('Transaction changeSitePassword is sent. Transaction hash:', tx.hash);
+}
+
+async function addUserToSite(message, site, login, password) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const textEncoder = new TextEncoder();
+    const bytesPassword = textEncoder.encode(password);
+
+    const currentNonce = await wallet.getTransactionCount();
+
+    const transaction = {
+        nonce: currentNonce,
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData('addUserToSite', [messageHash, v, r, s, site, login, bytesPassword]),
+        gasLimit: 2000000,
+        gasPrice: ethers.utils.parseUnits('30', 'gwei'),
+        chainId: chainId,
+    };
+
+    const signedTransaction = await wallet.signTransaction(transaction);
+
+    const tx = await provider.sendTransaction(signedTransaction);
+
+    console.log('Transaction addUserToSite is sent. Transaction hash:', tx.hash);
+}
+
+// addUserToSite(message, 'lol.com', 'kolya', 'nbnbnbnbnbnbn');
+
+
+async function getSites(message) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const result = await contract.getSites(messageHash, v, r, s);
+
+    console.log('result = ', result);
+}
+
+getSites(message);
+
+
+// function getLogins(
+//     bytes32 message,
+//     uint8 v,
+//     bytes32 r,
+//     bytes32 s,
+//     string memory site
+// ) public view isAuth(message, v, r, s) returns(User[] memory) {
+//     return users[msg.sender][site];
+// }
