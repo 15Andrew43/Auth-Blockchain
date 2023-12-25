@@ -466,7 +466,7 @@ async function addUserToSite(message, site, login, password) {
     console.log('Transaction addUserToSite is sent. Transaction hash:', tx.hash);
 }
 
-// addUserToSite(message, 'lol.com', 'kolya', 'nbnbnbnbnbnbn');
+// addUserToSite(message, 'yandex.ru', 'kolya', 'nbnbnbnbnbnbn');
 
 
 async function getSites(message) {
@@ -475,17 +475,21 @@ async function getSites(message) {
     const result = await contract.getSites(messageHash, v, r, s);
 
     console.log('result = ', result);
+
+    return result
 }
 
-getSites(message);
+// getSites(message);
 
 
-// function getLogins(
-//     bytes32 message,
-//     uint8 v,
-//     bytes32 r,
-//     bytes32 s,
-//     string memory site
-// ) public view isAuth(message, v, r, s) returns(User[] memory) {
-//     return users[msg.sender][site];
-// }
+async function getLogins(message, site) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const result = await contract.getLogins(messageHash, v, r, s, site);
+
+    console.log('result = ', result);
+
+    return result
+}
+
+// getLogins(message, 'yandex.ru');
