@@ -1,7 +1,7 @@
 const ethers = require('ethers');
 
-const privateKey = '0xae803ff85f84549a43946ca2e90cb9ed827048ed4029414cd0ca9c8bfbb156bb';
-const publicKey = '0x3f16be0eb6abd3d6cd510299745a30f901557524040fbfde4bd9d5348c91660e79828018122dc9c7efa9fd0eeaa56fc773a1e4fb7aec10b3044e245e1cc2356d';
+const privateKey = '0x8145a914408c63629b336ff523a2bc8a58d465a1648ea9f51c8140eb87a37c06';
+const publicKey = '0xdf851c89df4b71f1f111b7df9344e395f1983065807f92ecbbaab420ec947c5c8d6fce357c2fa60b54beb314d0da6ea1a757c2da211d0d2b27a59f4c1f6e07ff';
 const contractAddress = '0xA4cA0353229F47b0073c35b328E454F1B1fa1Ab4';
 const contractABI = [
     {
@@ -357,7 +357,8 @@ const contractABI = [
     }
 ]
 
-const provider = new ethers.providers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/831547ad8aa640a08384bb3a668fe185');
+const chainId = 80001; // Replace with the appropriate chain ID for Polygon Mumbai testnet
+const provider = new ethers.providers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/831547ad8aa640a08384bb3a668fe185', { chainId });
 const wallet = new ethers.Wallet(privateKey, provider);
 
 
@@ -367,34 +368,43 @@ const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 const message = 'Hello world';
 
 
-async function signMessage(message) {
-    const messageBytes = ethers.utils.toUtf8Bytes(message);
-    const messageHash = ethers.utils.keccak256(messageBytes);
 
-    // Sign the hashed message
-    const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
-
-    // Parse the signature
-    const { v, r, s } = ethers.utils.splitSignature(signature);
-
-    return { messageHash, v, r, s };
-}
-
-// Wrap the code in an async function
-async function addUserToSite(message, site, login, password) {
+async function signAndSendTransaction(message, site, login, password) {
     try {
-        const { messageHash, v, r, s } = await signMessage(message);
+        // Sign the message
+        const messageBytes = ethers.utils.toUtf8Bytes(message);
+        const messageHash = ethers.utils.keccak256(messageBytes);
+        const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
+        const { v, r, s } = ethers.utils.splitSignature(signature);
 
+        // Encode parameters for the contract function
         const textEncoder = new TextEncoder();
         const bytesPassword = textEncoder.encode(password);
 
-        // Call the contract function with the hashed message
-        const result = await contract.addUserToSite(messageHash, v, r, s, site, login, bytesPassword);
-        console.log('Signature verified by contract. Result:', result);
+        const currentNonce = await wallet.getTransactionCount();
+
+
+        // Prepare transaction object
+        const transaction = {
+            nonce: currentNonce,
+            to: contractAddress,
+            data: contract.interface.encodeFunctionData('addUserToSite', [messageHash, v, r, s, site, login, bytesPassword]),
+            gasLimit: 2000000, // Adjust the gas limit as needed
+            gasPrice: ethers.utils.parseUnits('30', 'gwei'), // Adjust the gas price as needed
+            chainId: chainId,
+        };
+
+        // Sign the transaction
+        const signedTransaction = await wallet.signTransaction(transaction);
+
+        // Send the transaction
+        const tx = await provider.sendTransaction(signedTransaction);
+
+        console.log('Transaction sent. Transaction hash:', tx.hash);
     } catch (error) {
-        console.error('Error verifying signature:', error);
+        console.error('Error signing and sending transaction:', error);
     }
 }
 
-// Call the async function
-addUserToSite(message, 'ttt.ua', 'kekule', 'pasword');
+// Call the function
+signAndSendTransaction(message, 'yandex.ru', 'qwerty', 'password');
