@@ -364,27 +364,32 @@ const wallet = new ethers.Wallet(privateKey, provider);
 
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
-const message = publicKey;
+const message = 'Hello world';
 
+
+async function signMessage(message) {
+    const messageBytes = ethers.utils.toUtf8Bytes(message);
+    const messageHash = ethers.utils.keccak256(messageBytes);
+
+    // Sign the hashed message
+    const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
+
+    // Parse the signature
+    const { v, r, s } = ethers.utils.splitSignature(signature);
+
+    return { messageHash, v, r, s };
+}
 
 // Wrap the code in an async function
-async function signAndVerify(message) {
+async function addUserToSite(message, site, login, password) {
     try {
-        const messageBytes = ethers.utils.toUtf8Bytes(message);
-        const messageHash = ethers.utils.sha256(messageBytes);
-
-        // Восстановление подписи
-        const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
-
-        // Разбираем подпись на компоненты (v, r, s)
-        const { v, r, s } = ethers.utils.splitSignature(signature);
-
+        const { messageHash, v, r, s } = await signMessage(message);
 
         const textEncoder = new TextEncoder();
-        const bytes = textEncoder.encode('parol');
+        const bytesPassword = textEncoder.encode(password);
 
-        // Вызываем функцию verifySignature на смарт-контракте
-        const result = await contract.addUserToSite(messageHash, v, r, s, 'qqq.ru', 'papa', bytes);
+        // Call the contract function with the hashed message
+        const result = await contract.addUserToSite(messageHash, v, r, s, site, login, bytesPassword);
         console.log('Signature verified by contract. Result:', result);
     } catch (error) {
         console.error('Error verifying signature:', error);
@@ -392,4 +397,4 @@ async function signAndVerify(message) {
 }
 
 // Call the async function
-signAndVerify(message);
+addUserToSite(message, 'ttt.ua', 'kekule', 'pasword');
