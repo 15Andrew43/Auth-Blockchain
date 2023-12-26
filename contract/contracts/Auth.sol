@@ -20,6 +20,7 @@ contract Auth {
     event changeSite(string oldSiteName, string newSiteName);
     event changeLogin(string site, string oldLogin, string newLogin);
     event changePassword(string site, string login, bytes newPassword);
+    event deleteSite(string site);
 
     modifier isAuth(
         bytes32 message,
@@ -76,6 +77,31 @@ contract Auth {
         emit changeSite(oldSiteName, newSiteName);
     }
 
+    function deleteSiteInfo(
+        bytes32 message,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string memory site
+    ) external isAuth(message, v, r, s) {
+        for (uint i = 0; i < users[msg.sender][site].length; i++) {
+            delete users[msg.sender][site][i];
+        }
+        delete users[msg.sender][site];
+
+        for (uint i = 0; i < sites[msg.sender].length; i++) {
+            if (MyStringLibrary.isEqual(sites[msg.sender][i], site)) {
+                sites[msg.sender][i] = sites[msg.sender][
+                    sites[msg.sender].length - 1
+                ];
+                sites[msg.sender].pop();
+                break;
+            }
+        }
+
+        emit deleteSite(site);
+    }
+
     function changeSiteLogin(
         bytes32 message,
         uint8 v,
@@ -130,7 +156,9 @@ contract Auth {
         string memory _login,
         bytes memory _password
     ) external isAuth(message, v, r, s) {
-        sites[msg.sender].push(site);
+        if (users[msg.sender][site].length == 0) {
+            sites[msg.sender].push(site);
+        }
         users[msg.sender][site].push(User(_login, _password));
 
         emit NewUser(site, _login, _password);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from '../Styles.module.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSites } from '../redux/store.js';
-import { getSites, changeSiteName } from '../web3/main.js';
+import { getSites, changeSiteName, getLogins, deleteSiteInfo } from '../web3/main.js';
 
 const Sites = () => {
     const dispatch = useDispatch();
@@ -11,16 +11,30 @@ const Sites = () => {
 
     const [curSite, setCurSite] = useState('');
     const [curInd, setCurInd] = useState(-1);
+    const [accounts, setAccounts] = useState([]);
+
 
     const fetchData = async () => {
         const fetchedSites = await getSites(localStorage.getItem('pubKey'));
-        // const fetchedSites = ['Q', 'W', 'E'];
         console.log('SITES = ', fetchedSites);
         dispatch(setSites(fetchedSites));
     };
 
-    const handleSaveSite = () => {
+    const handleSaveSite = async () => {
         changeSiteName(localStorage.getItem('pubKey'), sites[curInd], curSite);
+        fetchData();
+    }
+
+    const handleGetAccounts = async (index) => {
+        setCurInd(index);
+        setCurSite(sites[index]);
+        const siteAccounts = await getLogins(localStorage.getItem('pubKey'), sites[index]);
+        console.log(siteAccounts)
+        setAccounts(siteAccounts);
+    }
+
+    const handledeleteSite = async (index) => {
+        await deleteSiteInfo(localStorage.getItem('pubKey'), sites[index]);
         fetchData();
     }
 
@@ -42,7 +56,29 @@ const Sites = () => {
                         setCurSite(e.target.value);
                     }}>
                     </input>
-                    <button onClick={handleSaveSite}>Save</button>
+                    <button onClick={handleSaveSite}>save</button>
+                    <button onClick={() => handleGetAccounts(index)}>accounts</button>
+                    <button onClick={() => handledeleteSite(index)}>delete</button>
+                    {index === curInd && accounts.length > 0 && (
+                        <ul>
+                            {accounts.map((account, accountIndex) => (
+                                <li key={accountIndex}>
+                                    <div>
+                                        <input type='text' value={account.login} />
+                                        <button onClick={() => {
+                                            navigator.clipboard.writeText(account.login);
+                                        }}>copy</button>
+                                    </div>
+                                    <div>
+                                        <input type='password' value={account.password} />
+                                        <button onClick={() => {
+                                            navigator.clipboard.writeText(account.password);
+                                        }}>copy</button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             ))}
         </div>

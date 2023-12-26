@@ -2,7 +2,7 @@ const ethers = require('ethers');
 
 const privateKey = '0x8145a914408c63629b336ff523a2bc8a58d465a1648ea9f51c8140eb87a37c06';
 const publicKey = '0xdf851c89df4b71f1f111b7df9344e395f1983065807f92ecbbaab420ec947c5c8d6fce357c2fa60b54beb314d0da6ea1a757c2da211d0d2b27a59f4c1f6e07ff';
-const contractAddress = '0xA4cA0353229F47b0073c35b328E454F1B1fa1Ab4';
+const contractAddress = '0x7318ca21747c3EF3D07e9B6C41Be1Aa57654AE6C';
 const contractABI = [
     {
         "inputs": [
@@ -271,6 +271,52 @@ const contractABI = [
         "type": "function"
     },
     {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "site",
+                "type": "string"
+            }
+        ],
+        "name": "deleteSite",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "message",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "uint8",
+                "name": "v",
+                "type": "uint8"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "r",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "s",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "string",
+                "name": "site",
+                "type": "string"
+            }
+        ],
+        "name": "deleteSiteInfo",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "bytes32",
@@ -398,6 +444,27 @@ export async function changeSiteName(message, oldSiteName, newSiteName) {
     const tx = await provider.sendTransaction(signedTransaction);
 
     console.log('Transaction changeSiteName is sent. Transaction hash:', tx.hash);
+}
+
+export async function deleteSiteInfo(message, site) {
+    const { messageHash, v, r, s } = await sighMessage(message);
+
+    const currentNonce = await wallet.getTransactionCount();
+
+    const transaction = {
+        nonce: currentNonce,
+        to: contractAddress,
+        data: contract.interface.encodeFunctionData('deleteSiteInfo', [messageHash, v, r, s, site]),
+        gasLimit: 2000000,
+        gasPrice: ethers.utils.parseUnits('30', 'gwei'),
+        chainId: chainId,
+    };
+
+    const signedTransaction = await wallet.signTransaction(transaction);
+
+    const tx = await provider.sendTransaction(signedTransaction);
+
+    console.log('Transaction deleteSiteInfo is sent. Transaction hash:', tx.hash);
 }
 
 export async function changeSiteLogin(message, site, oldLogin, newLogin) {
