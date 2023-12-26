@@ -467,3 +467,6 @@ export const wallet = new ethers.Wallet(privateKey, provider);
 
 
 export const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+// export const iv = Buffer.from([25, 109, 100, 236, 14, 127, 85, 135, 184, 72, 253, 122, 240, 28, 158, 58]);
+// export const ivToStringHex = 'a842a3338e111c8d8c935f5ee8c2b1c0';

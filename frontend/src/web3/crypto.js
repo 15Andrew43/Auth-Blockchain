@@ -1,18 +1,16 @@
 import cryptoBrowserify from 'crypto-browserify';
-import { Buffer } from 'buffer'; // Import Buffer from the 'buffer' package
+import { Buffer } from 'buffer';
 import stream from 'stream-browserify';
 
 window.cryptoBrowserify = cryptoBrowserify;
 window.stream = stream;
-window.Buffer = Buffer; // Expose Buffer to the global scope
+window.Buffer = Buffer;
 
-
-// Your remaining code
 
 export function encryptPassword(password, privateKey) {
-    const key = Buffer.from(privateKey, 'hex');
-    const iv = cryptoBrowserify.randomBytes(16);
+    const iv = Buffer.from([25, 109, 100, 236, 14, 127, 85, 135, 184, 72, 253, 122, 240, 28, 158, 58]);
 
+    const key = Buffer.from(privateKey, 'hex');
     const cipher = cryptoBrowserify.createCipheriv('aes-256-cbc', key, iv);
 
     let encryptedPassword = cipher.update(password, 'utf-8', 'hex');
@@ -21,7 +19,9 @@ export function encryptPassword(password, privateKey) {
     return { encryptedPassword: encryptedPassword, iv: iv.toString('hex') };
 }
 
-export function decryptPassword(encryptedPassword, privateKey, iv) {
+export function decryptPassword(encryptedPassword, privateKey) {
+    const iv = Buffer.from([25, 109, 100, 236, 14, 127, 85, 135, 184, 72, 253, 122, 240, 28, 158, 58]);
+
     const key = Buffer.from(privateKey, 'hex');
     const decipher = cryptoBrowserify.createDecipheriv('aes-256-cbc', key, Buffer.from(iv, 'hex'));
 
@@ -31,13 +31,13 @@ export function decryptPassword(encryptedPassword, privateKey, iv) {
     return decryptedPassword;
 }
 
-// Example usage
-const privateKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
-const password = 'mySecretPassword';
+// Пример использования
+// const privateKey = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+// const password = 'mySecretPassword';
 
-const { encryptedPassword, iv } = encryptPassword(password, privateKey);
-console.log('Encrypted Password:', encryptedPassword);
-console.log('Initialization Vector (IV):', iv);
+// const iv = cryptoBrowserify.randomBytes(16);
+// const { encryptedPassword } = encryptPassword(password, privateKey, iv);
+// console.log('Encrypted Password:', encryptedPassword);
 
-const decryptedPassword = decryptPassword(encryptedPassword, privateKey, iv);
-console.log('Decrypted Password:', decryptedPassword);
+// const decryptedPassword = decryptPassword(encryptedPassword, privateKey, iv);
+// console.log('Decrypted Password:', decryptedPassword);

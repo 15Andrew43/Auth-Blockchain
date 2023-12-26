@@ -2,6 +2,8 @@ const ethers = require('ethers');
 const { encryptPassword, decryptPassword } = require('./crypto.js');
 const { privateKey, purePrivateKey, publicKey, contractAddress, chainId, provider, wallet, contract } = require('./constants.js');
 
+// const iv = Buffer.from([25, 109, 100, 236, 14, 127, 85, 135, 184, 72, 253, 122, 240, 28, 158, 58]);
+// const ivToStringHex = 'a842a3338e111c8d8c935f5ee8c2b1c0';
 
 const message = publicKey;
 
@@ -125,17 +127,10 @@ export async function changeSitePassword(message, site, login, newPassword) {
 export async function addUserToSite(message, site, login, password) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
-    ////////////////////////////////////////////////////////////
-    // const { encryptedPassword, iv } = encryptPassword(password, purePrivateKey, iv);
-    // console.log('Encrypted Password:', encryptedPassword);
-    // console.log('Initialization Vector (IV):', iv);
-
-    // const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
-    // console.log('Decrypted Password:', decryptedPassword);
-    /////////////////////////////////////////////////////////////////
+    const { encryptedPassword, _ } = encryptPassword(password, purePrivateKey);
 
     const textEncoder = new TextEncoder();
-    const bytesPassword = textEncoder.encode(password);
+    const bytesPassword = textEncoder.encode(encryptedPassword);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -176,24 +171,14 @@ export async function getLogins(message, site) {
 
     console.log('result = ', result);
 
-    ////////////////////////////////////////////////////////////
-    // const { encryptedPassword, iv } = encryptPassword(password, purePrivateKey);
-    // console.log('Encrypted Password:', encryptedPassword);
-    // console.log('Initialization Vector (IV):', iv);
-
-    // const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
-    // console.log('Decrypted Password:', decryptedPassword);
-    /////////////////////////////////////////////////////////////////
 
     const decodedResults = result.map((loginAndPassword) => {
         const [login, password] = loginAndPassword;
         const byteArray = password.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
         const decodedPassword = new TextDecoder('utf-8').decode(Uint8Array.from(byteArray)).slice(1);
-        // const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
-        return { login, password: decodedPassword };
+        const decryptedPassword = decryptPassword(decodedPassword, purePrivateKey);
+        return { login, password: decryptedPassword };
     });
-
-    // console.log(decodedResults);
 
 
     return decodedResults
