@@ -102,6 +102,27 @@ contract Auth {
         emit deleteSite(site);
     }
 
+    function deleteAccountInfo(
+        bytes32 message,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        string memory site,
+        string memory login
+    ) external isAuth(message, v, r, s) {
+        for (uint i = 0; i < users[msg.sender][site].length; i++) {
+            if (
+                MyStringLibrary.isEqual(users[msg.sender][site][i].login, login)
+            ) {
+                users[msg.sender][site][i] = users[msg.sender][site][
+                    users[msg.sender][site].length - 1
+                ];
+                users[msg.sender][site].pop();
+            }
+        }
+        emit deleteSite(site);
+    }
+
     function changeSiteLogin(
         bytes32 message,
         uint8 v,

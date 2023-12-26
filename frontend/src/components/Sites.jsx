@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from '../Styles.module.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSites } from '../redux/store.js';
-import { getSites, changeSiteName, getLogins, deleteSiteInfo } from '../web3/main.js';
+import { getSites, changeSiteName, getLogins, deleteSiteInfo, deleteAccountInfo } from '../web3/main.js';
 
 const Sites = () => {
     const dispatch = useDispatch();
@@ -35,6 +35,11 @@ const Sites = () => {
 
     const handledeleteSite = async (index) => {
         await deleteSiteInfo(localStorage.getItem('pubKey'), sites[index]);
+        fetchData();
+    }
+
+    const handleDeleteAccount = async (site, login) => {
+        await deleteAccountInfo(localStorage.getItem('pubKey'), site, login);
         fetchData();
     }
 
@@ -75,6 +80,9 @@ const Sites = () => {
                                             navigator.clipboard.writeText(account.password);
                                         }}>copy</button>
                                     </div>
+                                    <button onClick={() => {
+                                        handleDeleteAccount(site, account.login);
+                                    }}>delete Account</button>
                                 </li>
                             ))}
                         </ul>
