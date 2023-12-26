@@ -1,6 +1,8 @@
 const ethers = require('ethers');
+const { encryptPassword, decryptPassword } = require('./crypto.js');
 
 const privateKey = '0x8145a914408c63629b336ff523a2bc8a58d465a1648ea9f51c8140eb87a37c06';
+const purePrivateKey = '8145a914408c63629b336ff523a2bc8a58d465a1648ea9f51c8140eb87a37c06';
 const publicKey = '0xdf851c89df4b71f1f111b7df9344e395f1983065807f92ecbbaab420ec947c5c8d6fce357c2fa60b54beb314d0da6ea1a757c2da211d0d2b27a59f4c1f6e07ff';
 const contractAddress = '0x6C43d8f7B4d3636e34a3eb2827e8c3AEE9bCF4aD';
 const contractABI = [
@@ -441,7 +443,7 @@ const contractABI = [
     }
 ]
 
-const chainId = 80001; // Replace with the appropriate chain ID for Polygon Mumbai testnet
+const chainId = 80001;
 const provider = new ethers.providers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/831547ad8aa640a08384bb3a668fe185', { chainId });
 const wallet = new ethers.Wallet(privateKey, provider);
 
@@ -571,6 +573,15 @@ export async function changeSitePassword(message, site, login, newPassword) {
 export async function addUserToSite(message, site, login, password) {
     const { messageHash, v, r, s } = await sighMessage(message);
 
+    ////////////////////////////////////////////////////////////
+    // const { encryptedPassword, iv } = encryptPassword(password, purePrivateKey, iv);
+    // console.log('Encrypted Password:', encryptedPassword);
+    // console.log('Initialization Vector (IV):', iv);
+
+    // const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
+    // console.log('Decrypted Password:', decryptedPassword);
+    /////////////////////////////////////////////////////////////////
+
     const textEncoder = new TextEncoder();
     const bytesPassword = textEncoder.encode(password);
 
@@ -592,7 +603,6 @@ export async function addUserToSite(message, site, login, password) {
     console.log('Transaction addUserToSite is sent. Transaction hash:', tx.hash);
 }
 
-// addUserToSite(message, 'yandex.ru', 'kolya', 'nbnbnbnbnbnbn');
 
 
 export async function getSites(message) {
@@ -605,7 +615,6 @@ export async function getSites(message) {
     return result
 }
 
-// getSites(message);
 
 
 export async function getLogins(message, site) {
@@ -615,7 +624,25 @@ export async function getLogins(message, site) {
 
     console.log('result = ', result);
 
+    ////////////////////////////////////////////////////////////
+    // const { encryptedPassword, iv } = encryptPassword(password, purePrivateKey);
+    // console.log('Encrypted Password:', encryptedPassword);
+    // console.log('Initialization Vector (IV):', iv);
+
+    // const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
+    // console.log('Decrypted Password:', decryptedPassword);
+    /////////////////////////////////////////////////////////////////
+
+    // const decodedResults = result.map((loginAndPassword) => {
+    //     const [login, password] = loginAndPassword;
+    //     const byteArray = password.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
+    //     const decodedPassword = new TextDecoder('utf-8').decode(Uint8Array.from(byteArray)).slice(1);
+    //     const decryptedPassword = decryptPassword(encryptedPassword, purePrivateKey, iv);
+    //     return { login, password: decryptedPassword };
+    // });
+
+    // console.log(decodedResults);
+
+
     return result
 }
-
-// getLogins(message, 'yandex.ru');

@@ -20,8 +20,8 @@ module.exports = {
                     loader: 'babel-loader',
                     options: {
                         presets: ['@babel/preset-env', '@babel/preset-react'],
-                    }
-                }
+                    },
+                },
             },
             {
                 test: /\.css$/,
@@ -37,7 +37,13 @@ module.exports = {
             //         },
             //     }],
             // },
-        ]
+        ],
+    },
+    resolve: {
+        fallback: {
+            stream: require.resolve('stream-browserify'),
+            buffer: require.resolve('buffer/'),
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({
