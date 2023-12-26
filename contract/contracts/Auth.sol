@@ -14,13 +14,15 @@ contract Auth {
     address owner;
 
     mapping(address => mapping(string => User[])) users;
-    mapping(address => string[]) sites;
+    mapping(address => string[]) usersSites;
+    mapping(string => bool) siteExist;
 
     event NewUser(string site, string login, bytes password);
     event changeSite(string oldSiteName, string newSiteName);
     event changeLogin(string site, string oldLogin, string newLogin);
     event changePassword(string site, string login, bytes newPassword);
     event deleteSite(string site);
+    event deleteAccount(string site, string login);
 
     modifier isAuth(
         bytes32 message,
@@ -60,6 +62,8 @@ contract Auth {
         string memory oldSiteName,
         string memory newSiteName
     ) external isAuth(message, v, r, s) {
+        require(siteExist[oldSiteName], "site with this name does not exist");
+
         for (uint i = 0; i < users[msg.sender][oldSiteName].length; i++) {
             User memory user = users[msg.sender][oldSiteName][i];
             users[msg.sender][newSiteName].push(user);
@@ -67,12 +71,16 @@ contract Auth {
         }
         delete users[msg.sender][oldSiteName];
 
-        for (uint i = 0; i < sites[msg.sender].length; i++) {
-            if (MyStringLibrary.isEqual(sites[msg.sender][i], oldSiteName)) {
-                sites[msg.sender][i] = newSiteName;
+        for (uint i = 0; i < usersSites[msg.sender].length; i++) {
+            if (
+                MyStringLibrary.isEqual(usersSites[msg.sender][i], oldSiteName)
+            ) {
+                usersSites[msg.sender][i] = newSiteName;
                 break;
             }
         }
+        delete siteExist[oldSiteName];
+        siteExist[newSiteName] = true;
 
         emit changeSite(oldSiteName, newSiteName);
     }
@@ -84,20 +92,24 @@ contract Auth {
         bytes32 s,
         string memory site
     ) external isAuth(message, v, r, s) {
+        require(siteExist[site], "site with this name does not exist");
+
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             delete users[msg.sender][site][i];
         }
         delete users[msg.sender][site];
 
-        for (uint i = 0; i < sites[msg.sender].length; i++) {
-            if (MyStringLibrary.isEqual(sites[msg.sender][i], site)) {
-                sites[msg.sender][i] = sites[msg.sender][
-                    sites[msg.sender].length - 1
+        for (uint i = 0; i < usersSites[msg.sender].length; i++) {
+            if (MyStringLibrary.isEqual(usersSites[msg.sender][i], site)) {
+                usersSites[msg.sender][i] = usersSites[msg.sender][
+                    usersSites[msg.sender].length - 1
                 ];
-                sites[msg.sender].pop();
+                usersSites[msg.sender].pop();
                 break;
             }
         }
+
+        delete siteExist[site];
 
         emit deleteSite(site);
     }
@@ -110,6 +122,8 @@ contract Auth {
         string memory site,
         string memory login
     ) external isAuth(message, v, r, s) {
+        require(siteExist[site], "site with this name does not exist");
+
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             if (
                 MyStringLibrary.isEqual(users[msg.sender][site][i].login, login)
@@ -120,7 +134,7 @@ contract Auth {
                 users[msg.sender][site].pop();
             }
         }
-        emit deleteSite(site);
+        emit deleteAccount(site, login);
     }
 
     function changeSiteLogin(
@@ -132,6 +146,8 @@ contract Auth {
         string memory oldLogin,
         string memory newLogin
     ) external isAuth(message, v, r, s) {
+        require(siteExist[site], "site with this name does not exist");
+
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             if (
                 MyStringLibrary.isEqual(
@@ -156,6 +172,8 @@ contract Auth {
         string memory login,
         bytes memory newPassword
     ) external isAuth(message, v, r, s) {
+        require(siteExist[site], "site with this name does not exist");
+
         for (uint i = 0; i < users[msg.sender][site].length; i++) {
             if (
                 MyStringLibrary.isEqual(users[msg.sender][site][i].login, login)
@@ -177,8 +195,9 @@ contract Auth {
         string memory _login,
         bytes memory _password
     ) external isAuth(message, v, r, s) {
-        if (users[msg.sender][site].length == 0) {
-            sites[msg.sender].push(site);
+        if (!siteExist[site]) {
+            siteExist[site] = true;
+            usersSites[msg.sender].push(site);
         }
         users[msg.sender][site].push(User(_login, _password));
 
@@ -191,7 +210,7 @@ contract Auth {
         bytes32 r,
         bytes32 s
     ) public view isAuth(message, v, r, s) returns (string[] memory) {
-        return sites[msg.sender];
+        return usersSites[msg.sender];
     }
 
     function getLogins(
