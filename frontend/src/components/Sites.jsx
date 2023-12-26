@@ -15,7 +15,7 @@ const Sites = () => {
 
 
     const fetchData = async () => {
-        const fetchedSites = await getSites(localStorage.getItem('pubKey'));
+        const fetchedSites = await getSites(localStorage.getItem('pubKey'), localStorage.getItem('privKey'));
         console.log('SITES = ', fetchedSites);
         dispatch(setSites(fetchedSites));
     };
@@ -28,18 +28,18 @@ const Sites = () => {
     const handleGetAccounts = async (index) => {
         setCurInd(index);
         setCurSite(sites[index]);
-        const siteAccounts = await getLogins(localStorage.getItem('pubKey'), sites[index]);
+        const siteAccounts = await getLogins(localStorage.getItem('pubKey'), localStorage.getItem('privKey'), sites[index]);
         console.log(siteAccounts)
         setAccounts(siteAccounts);
     }
 
     const handledeleteSite = async (index) => {
-        await deleteSiteInfo(localStorage.getItem('pubKey'), sites[index]);
+        await deleteSiteInfo(localStorage.getItem('pubKey'), localStorage.getItem('privKey'), sites[index]);
         fetchData();
     }
 
     const handleDeleteAccount = async (site, login) => {
-        await deleteAccountInfo(localStorage.getItem('pubKey'), site, login);
+        await deleteAccountInfo(localStorage.getItem('pubKey'), localStorage.getItem('privKey'), site, login);
         fetchData();
     }
 

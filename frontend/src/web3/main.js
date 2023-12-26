@@ -1,14 +1,15 @@
 const ethers = require('ethers');
 const { encryptPassword, decryptPassword } = require('./crypto.js');
-const { privateKey, purePrivateKey, publicKey, contractAddress, chainId, provider, wallet, contract } = require('./constants.js');
+const { /*privateKey, purePrivateKey, publicKey,*/ contractABI, contractAddress, chainId, provider, wallet, contract } = require('./constants.js');
 
 // const iv = Buffer.from([25, 109, 100, 236, 14, 127, 85, 135, 184, 72, 253, 122, 240, 28, 158, 58]);
 // const ivToStringHex = 'a842a3338e111c8d8c935f5ee8c2b1c0';
 
-const message = publicKey;
 
 
-async function sighMessage(message) {
+async function sighMessage(publicKey, wallet) {
+    const message = publicKey;
+
     const messageBytes = ethers.utils.toUtf8Bytes(message);
     const messageHash = ethers.utils.keccak256(messageBytes);
     const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
@@ -19,8 +20,12 @@ async function sighMessage(message) {
 
 
 
-export async function changeSiteName(message, oldSiteName, newSiteName) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function changeSiteName(publicKey, privateKey, oldSiteName, newSiteName) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -40,8 +45,12 @@ export async function changeSiteName(message, oldSiteName, newSiteName) {
     console.log('Transaction changeSiteName is sent. Transaction hash:', tx.hash);
 }
 
-export async function deleteSiteInfo(message, site) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function deleteSiteInfo(publicKey, privateKey, site) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -61,8 +70,12 @@ export async function deleteSiteInfo(message, site) {
     console.log('Transaction deleteSiteInfo is sent. Transaction hash:', tx.hash);
 }
 
-export async function deleteAccountInfo(message, site, login) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function deleteAccountInfo(publicKey, privateKey, site, login) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -82,8 +95,12 @@ export async function deleteAccountInfo(message, site, login) {
     console.log('Transaction deleteAccountInfo is sent. Transaction hash:', tx.hash);
 }
 
-export async function changeSiteLogin(message, site, oldLogin, newLogin) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function changeSiteLogin(publicKey, privateKey, site, oldLogin, newLogin) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -103,8 +120,12 @@ export async function changeSiteLogin(message, site, oldLogin, newLogin) {
     console.log('Transaction changeSiteLogin is sent. Transaction hash:', tx.hash);
 }
 
-export async function changeSitePassword(message, site, login, newPassword) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function changeSitePassword(publicKey, privateKey, site, login, newPassword) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const currentNonce = await wallet.getTransactionCount();
 
@@ -124,10 +145,17 @@ export async function changeSitePassword(message, site, login, newPassword) {
     console.log('Transaction changeSitePassword is sent. Transaction hash:', tx.hash);
 }
 
-export async function addUserToSite(message, site, login, password) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function addUserToSite(publicKey, privateKey, site, login, password) {
+    console.log(publicKey)
+    console.log(privateKey)
 
-    const { encryptedPassword, _ } = encryptPassword(password, purePrivateKey);
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+    const { encryptedPassword, _ } = encryptPassword(password, privateKey.slice(2));
 
     const textEncoder = new TextEncoder();
     const bytesPassword = textEncoder.encode(encryptedPassword);
@@ -152,8 +180,12 @@ export async function addUserToSite(message, site, login, password) {
 
 
 
-export async function getSites(message) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function getSites(publicKey, privateKey) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const result = await contract.getSites(messageHash, v, r, s);
 
@@ -164,8 +196,12 @@ export async function getSites(message) {
 
 
 
-export async function getLogins(message, site) {
-    const { messageHash, v, r, s } = await sighMessage(message);
+export async function getLogins(publicKey, privateKey, site) {
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const { messageHash, v, r, s } = await sighMessage(publicKey, wallet);
+
+    const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
     const result = await contract.getLogins(messageHash, v, r, s, site);
 
@@ -176,7 +212,7 @@ export async function getLogins(message, site) {
         const [login, password] = loginAndPassword;
         const byteArray = password.match(/.{1,2}/g).map(byte => parseInt(byte, 16));
         const decodedPassword = new TextDecoder('utf-8').decode(Uint8Array.from(byteArray)).slice(1);
-        const decryptedPassword = decryptPassword(decodedPassword, purePrivateKey);
+        const decryptedPassword = decryptPassword(decodedPassword, privateKey.slice(2));
         return { login, password: decryptedPassword };
     });
 

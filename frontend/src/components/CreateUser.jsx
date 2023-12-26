@@ -15,7 +15,7 @@ const CreateUser = () => {
 
     const handleSaveUserAccount = () => {
         if (localStorage.getItem('pubKey')) {
-            addUserToSite(localStorage.getItem('pubKey'), site, login, password);
+            addUserToSite(localStorage.getItem('pubKey'), localStorage.getItem('privKey'), site, login, password);
         }
         setSite('');
         setLogin('');
